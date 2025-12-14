@@ -1,6 +1,8 @@
+import CONFIG from '../config.js';
+
 class PushManager {
   constructor() {
-    this.vapidPublicKey = 'BN7-r0Svv7CsTi18-OPYtJLVW0bfuZ1x1UtrygczKjennA_kkAol6vsMePnK8l_8kV3FKJFc-CViV7xlG5O-n_KrMs';
+    this.vapidPublicKey = 'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r21CnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk';
     this.subscription = null;
   }
 
@@ -31,6 +33,40 @@ class PushManager {
     return outputArray;
   }
 
+  async sendSubscriptionToServer(subscription, token) {
+    try {
+      const subscriptionJSON = subscription.toJSON();
+      
+      const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          endpoint: subscriptionJSON.endpoint,
+          keys: {
+            p256dh: subscriptionJSON.keys.p256dh,
+            auth: subscriptionJSON.keys.auth
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[Push] Server error:', errorData);
+        throw new Error(errorData.message || 'Failed to send subscription to server');
+      }
+
+      const result = await response.json();
+      console.log('[Push] Subscription sent to server:', result);
+      return result;
+    } catch (error) {
+      console.error('[Push] Error sending subscription:', error);
+      throw error;
+    }
+  }
+
   async subscribe() {
     try {
       if (!this.isSupported()) {
@@ -38,6 +74,12 @@ class PushManager {
       }
 
       console.log('[Push] Subscribing...');
+
+      // Get token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('User not logged in');
+      }
 
       const registrationPromise = navigator.serviceWorker.ready;
       const timeoutPromise = new Promise((_, reject) => 
@@ -62,8 +104,11 @@ class PushManager {
         console.log('[Push] Already subscribed');
       }
 
+      // KIRIM KE SERVER DICODING
+      await this.sendSubscriptionToServer(subscription, token);
+
       this.subscription = subscription;
-      localStorage.setItem('pushSubscription', JSON.stringify(subscription));
+      localStorage.setItem('pushSubscription', JSON.stringify(subscription.toJSON()));
       localStorage.setItem('pushEnabled', 'true');
 
       return subscription;
@@ -84,6 +129,26 @@ class PushManager {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
+        // Unsubscribe dari server dulu
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                endpoint: subscription.endpoint
+              })
+            });
+          } catch (err) {
+            console.error('[Push] Error unsubscribing from server:', err);
+          }
+        }
+
+        // Unsubscribe dari browser
         await subscription.unsubscribe();
         console.log('[Push] Unsubscribed');
       }
