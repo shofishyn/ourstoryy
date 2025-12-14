@@ -9,9 +9,6 @@ async function registerServiceWorker() {
   }
 
   try {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (let reg of regs) await reg.unregister();
-
     const registration = await navigator.serviceWorker.register('/service-worker.js', {
       scope: '/',
       updateViaCache: 'none'
@@ -34,11 +31,13 @@ async function setupPush() {
     const enabled = pushManager.isEnabled();
     const subscribed = await pushManager.isSubscribed();
 
+    console.log('[Push] Status - Enabled:', enabled, 'Subscribed:', subscribed);
+
     if (enabled && !subscribed) {
       const permission = await pushManager.requestPermission();
       if (permission === 'granted') {
         await pushManager.subscribe();
-        console.log('[Push] Subscribed');
+        console.log('[Push] Subscribed successfully');
       }
     }
   } catch (err) {
