@@ -2,7 +2,7 @@ import CONFIG from '../config.js';
 
 class PushManager {
   constructor() {
-    this.vapidPublicKey = 'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r21CnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk';
+    this.vapidPublicKey = 'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk';
     this.subscription = null;
   }
 
@@ -207,3 +207,4 @@ class PushManager {
 
 const pushManager = new PushManager();
 export default pushManager;
+
