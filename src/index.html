@@ -24,13 +24,10 @@
 
         <nav id="navigation-drawer" class="navigation-drawer">
           <ul id="nav-list" class="nav-list">
-
             <li><a href="#/register" class="auth-link register-link">Register</a></li>
-
             <li><a href="#/" class="main-link">Home</a></li>
             <li><a href="#/saved" class="main-link">Saved</a></li>
             <li><a href="#/add-story" class="main-link">Add Story</a></li>
-
             <li><a href="#" id="logoutBtn" class="logout-link">Logout</a></li>
           </ul>
         </nav>
@@ -51,11 +48,17 @@
       z-index: 999;
       display: none;
     ">
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <label for="push-toggle-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
         <span>🔔 Push Notifications</span>
-        <input type="checkbox" id="push-toggle-checkbox" style="width: 20px; height: 20px; cursor: pointer;" />
+        <input 
+          type="checkbox" 
+          id="push-toggle-checkbox" 
+          name="pushNotifications"
+          style="width: 20px; height: 20px; cursor: pointer;"
+          aria-label="Enable push notifications" 
+        />
       </label>
-      <small id="push-status" style="display: block; margin-top: 4px; color: #666;"></small>
+      <small id="push-status" style="display: block; margin-top: 4px; color: #666;" aria-live="polite"></small>
     </div>
 
     <script>
@@ -141,14 +144,10 @@
           e.preventDefault();
           const mainContent = document.getElementById('main-content');
           if (mainContent) {
-            // Set tabindex agar bisa di-focus
             mainContent.setAttribute('tabindex', '-1');
-            // Focus ke main content
             mainContent.focus();
-            // Smooth scroll
             mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
-            // Remove tabindex setelah focus (best practice)
             mainContent.addEventListener('blur', () => {
               mainContent.removeAttribute('tabindex');
             }, { once: true });
@@ -159,7 +158,6 @@
       // Navbar Logic
       function updateNavbar() {
         const token = localStorage.getItem("token");
-
         const registerLink = document.querySelector(".register-link");
         const logoutLink = document.getElementById("logoutBtn");
 
@@ -174,11 +172,9 @@
         }
       }
 
-      // Update navbar saat halaman load dan saat hash berubah
       document.addEventListener("DOMContentLoaded", updateNavbar);
       window.addEventListener("hashchange", updateNavbar);
 
-      // Event logout
       document.addEventListener("click", function (e) {
         if (e.target.id === "logoutBtn") {
           e.preventDefault();
