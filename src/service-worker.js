@@ -5,7 +5,6 @@ const STATIC_CACHE = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
 ];
-
 // Install
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
@@ -15,7 +14,6 @@ self.addEventListener('install', (event) => {
       .then(() => self.skipWaiting())
   );
 });
-
 // Activate
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating...');
@@ -27,20 +25,19 @@ self.addEventListener('activate', (event) => {
       .then(() => self.clients.claim())
   );
 });
-
 // Fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (!request.url.startsWith('http')) return;
-
   const url = new URL(request.url);
-
-  // API: Network First
+  
+  // API: Network First 
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          if (res.ok) {
+          // Hanya simpan ke cache jika respons OK dan metodenya adalah GET
+          if (res.ok && request.method === 'GET') { 
             const clone = res.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
@@ -54,7 +51,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-
+  
   // Static: Cache First
   event.respondWith(
     caches.match(request)
@@ -68,7 +65,6 @@ self.addEventListener('fetch', (event) => {
       .catch(() => request.destination === 'document' && caches.match('/index.html'))
   );
 });
-
 // Push Notification
 self.addEventListener('push', (event) => {
   let title = 'Our Story';
@@ -79,7 +75,6 @@ self.addEventListener('push', (event) => {
     tag: 'new-story',
     data: { url: '/' }
   };
-
   if (event.data) {
     try {
       const data = event.data.json();
@@ -88,10 +83,8 @@ self.addEventListener('push', (event) => {
       options.data.url = data.url || options.data.url;
     } catch (e) {}
   }
-
   event.waitUntil(self.registration.showNotification(title, options));
 });
-
 // Notification Click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
